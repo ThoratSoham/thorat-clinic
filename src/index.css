@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Custom scrollbar for modern clinical look */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F8FAFC;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #0D9488;
+  }
+}
+
+/* Accessible focus styling */
+:focus-visible {
+  outline: 2px solid #0D9488;
+  outline-offset: 2px;
+}
