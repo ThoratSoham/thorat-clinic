@@ -188,26 +188,20 @@ export default function BookingForm({ preselectedService, onSuccess }) {
 
     try {
       if (!isSupabaseConfigured) {
-        // Mock success for local demo if environment variables are not yet configured
-        console.info('Supabase not yet configured with real keys. Simulating booking response.');
-        setTimeout(() => {
-          setIsSubmitting(false);
-          onSuccess({
-            ...payload,
-            id: 'demo-' + Math.random().toString(36).substring(2, 10),
-          });
-        }, 800);
+        console.warn('Supabase not configured. Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.');
+        setGeneralError('Supabase is not connected yet! Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are added to your environment variables (or Vercel project settings) and redeploy.');
+        setIsSubmitting(false);
         return;
       }
 
       // Insert directly into Supabase appointments table (protected by RLS and unique constraint)
-      const { data, error } = await supabase
+      // Note: We do NOT chain .select() because 'anon' role only has INSERT permissions for patient privacy
+      const { error } = await supabase
         .from('appointments')
-        .insert([payload])
-        .select()
-        .single();
+        .insert([payload]);
 
       if (error) {
+        console.error('Supabase booking error:', error);
         // Check for double booking (Postgres unique constraint violation error code 23505)
         if (error.code === '23505' || error.message?.includes('duplicate key') || error.message?.includes('unique')) {
           setGeneralError('That slot was just booked by another patient. Please choose another time slot.');
@@ -222,7 +216,7 @@ export default function BookingForm({ preselectedService, onSuccess }) {
       }
 
       setIsSubmitting(false);
-      onSuccess(data || payload);
+      onSuccess(payload);
     } catch (err) {
       console.error('Submission exception:', err);
       setGeneralError('An unexpected network error occurred. Please try again or call the clinic.');
